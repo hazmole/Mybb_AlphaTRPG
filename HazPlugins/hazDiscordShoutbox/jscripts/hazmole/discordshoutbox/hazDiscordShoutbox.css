@@ -1,0 +1,42 @@
+
+
+#hazdsb_shoutarea {
+   background: #36393e;
+   overflow-y:auto;
+}
+#hazdsb_shout {
+   box-sizing: border-box;
+   width: 100% !important;
+   height: 30px;
+}
+.haz_message {
+   border: 1px solid grey;
+   display:flex;
+   align-items:center;
+   color: hsla(0,0%,100%,.7);
+}
+.haz_message .avatar{
+   height: 30px;
+   width: 30px;
+   border-radius: 15px;
+   padding: 3px;
+}
+.haz_message .user{
+   font-weight: bold;
+}
+.haz_message img{
+   max-width: 100px;
+   max-height: 100px;
+}
+
+
+.hazdsb_member {
+   margin: 3px;
+   display:flex;
+   align-items:center;
+   border-bottom: grey 1px solid;
+}
+
+.tShout{
+   margin-bottom: 10px;
+}
