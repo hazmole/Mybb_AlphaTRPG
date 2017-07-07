@@ -12,7 +12,7 @@ if(!defined("IN_MYBB"))
     die("Direct initialization of this file is not allowed.");
 }
 
-define('HZRD_PLUGIN_VER', '2.658');
+define('HZRD_PLUGIN_VER', '2.66');
 /**
  * Installation Guild:
  * 		- put "hazRollDice.php" into "./inc/plugins/"

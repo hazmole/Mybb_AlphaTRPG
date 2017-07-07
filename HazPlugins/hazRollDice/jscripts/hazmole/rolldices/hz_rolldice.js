@@ -8,9 +8,9 @@ function haz_rollingDices() {
 	}
 
 	// Ignore Fullshape, space, ()
-	roll_exp = roll_exp.replace(/[()¡]¡^ ¡@]/g, "");
-	roll_exp = roll_exp.replace(/¡Õ/g, "<").replace(/¡Ö/g, ">").replace(/¡×/g, "=").replace(/¡Ï/g, "+").replace(/¡Ğ/g, "-");
-	roll_exp = roll_exp.replace(/[D¢ì¢Ò]/g, "d").replace(/[B¢ê¢Ğ]/g, "b").replace(/[S¢û¢á]/g, "s");
+	roll_exp = roll_exp.replace(/[()ï¼ˆï¼‰]/g, "");
+	roll_exp = roll_exp.replace(/ï¼œ/g, "<").replace(/ï¼/g, ">").replace(/ï¼/g, "=").replace(/ï¼‹/g, "+").replace(/ï¼/g, "-");
+	roll_exp = roll_exp.replace(/[Dï½„ï¼¤]/g, "d").replace(/[Bï½‚ï¼¢]/g, "b").replace(/[Sï½“ï¼³]/g, "s");
 	if(roll_exp.length>=20){
 		alert("Expression is too long!");
 		return -1;
@@ -109,16 +109,16 @@ function hazrd_generateRollResult(roll_config, dice_sets_result, total_sum, numb
 		}
 	}
 
-	if(!is_separate)	result_string += " ¡÷ " + total_sum;
+	if(!is_separate)	result_string += " â†’ " + total_sum;
 	else				result_string = "{"+result_string+"}";
 
 	if(is_separate && number_sum!=0)
 		result_string += ((number_sum>0)?"+":"") + number_sum;
 
 	if(is_compared){
-		result_string += " ¡÷ ";
-		if(!is_separate)	result_string += (eval(total_sum+roll_config["compare_symbo"]+roll_config["compare_val"]))? "¦¨¥\": "¥¢±Ñ";
-		else				result_string += total_sum+"¦¨¥\»ë";
+		result_string += " â†’ ";
+		if(!is_separate)	result_string += (eval(total_sum+roll_config["compare_symbo"]+roll_config["compare_val"]))? "æˆåŠŸ": "å¤±æ•—";
+		else				result_string += total_sum+"æˆåŠŸéª°";
 	}
 
 	return result_string;
@@ -243,14 +243,14 @@ function haz_rd_tableRender(claim, results, reason){
 	reason = reason.replace(/</g, '&lt;');
 	reason = reason.replace(/>/g, '&gt;');
 	
-	if(results.match(/¡÷(.*)$/)==null)
+	if(results.match(/Â¡Ã·(.*)$/)==null)
 		results += "</td><td>";
 	else
-		results = results.replace(/¡÷(.*)$/, '</td><td> ¡÷ <b style=\'color:blue;\'>$1</b>');
+		results = results.replace(/â†’(.*)$/, '</td><td> â†’ <b style=\'color:blue;\'>$1</b>');
 
 	var TD = '';
 	TD += '<td>: <b>'+claim+'</b></td>';
-	TD += '<td> ¡÷ '+results+'</td>';
+	TD += '<td> â†’ '+results+'</td>';
 	TD += '<td> '+reason+'</td>';
 	return '<tr>'+TD+'</tr>';
 }
