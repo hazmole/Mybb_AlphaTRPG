@@ -13,7 +13,7 @@ if(!defined("IN_MYBB"))
     die("Direct initialization of this file is not allowed.");
 }
 
-define('HZDSB_PLUGIN_VER', '0.47');
+define('HZDSB_PLUGIN_VER', '1.0');
 /**
  * Installation Guild:
  * 		- put "hazHider.php" into "./inc/plugins/"
@@ -93,7 +93,7 @@ function hazDiscordShoutbox_activate() {
 
 	// Modify Default Templates
 	require_once MYBB_ROOT."/inc/adminfunctions_templates.php";
-	find_replace_templatesets("index",  '#{\$forums}#', "<!-- hazShoutbox -->{\$haz_shoutbox}{\$hazdsb_include}<!-- /hazShoutbox -->{\$forums}");
+	find_replace_templatesets("index",  '#{\$forums}#', "<!-- hazShoutbox -->{\$haz_shoutbox}{\$hazdsb_smilies_json}{\$hazdsb_include}<!-- /hazShoutbox -->{\$forums}");
 }
 function hazDiscordShoutbox_deactivate() {
 	global $db;
@@ -117,8 +117,8 @@ if ($settings['hazDiscordShoutbox_online']) {
 
 function hazDiscordShoutbox_buildShoubox($message) {
 	// Set pattern & replacing string
-	global $lang, $mybb, $templates, $theme, $collapsed, $settings;
-	global $haz_shoutbox, $hazdsb_include, $hazdsb_reply, $hazdsb_invite;
+	global $lang, $mybb, $templates, $theme, $collapsed, $settings, $cache;
+	global $haz_shoutbox, $hazdsb_include, $hazdsb_reply, $hazdsb_invite, $hazdsb_smilies_json;
 /*
 	if (!$lang->rinshoutbox) {
 		$lang->load('rinshoutbox');
@@ -131,8 +131,17 @@ function hazDiscordShoutbox_buildShoubox($message) {
 	else
 		$hazdsb_invite= hazDiscordShoutbox_getInviteTemplate( false );
 
+	$smilie_json = "";
+    $smilies = $cache->read("smilies");
+	foreach($smilies as $sid => $smilie){
+		$smilie_json .= "{find:'".$smilie["find"]."',image:'".$smilie["image"]."'},";
+	}
+	$smilie_json = "[".$smilie_json."];";
+
+
 	eval("\$haz_shoutbox = \"".$templates->get("hazdsb_shoutbox")."\";");
-	eval("\$hazdsb_include = \"".$templates->get("hazdsb_header_include")."\";");	
+	eval("\$hazdsb_include = \"".$templates->get("hazdsb_header_include")."\";");
+	eval("\$hazdsb_smilies_json = \"<script type='text/javascript'> hazdsb_smilies_json=".$smilie_json."</script>\";");
 }
 
 
@@ -155,7 +164,16 @@ function hazDiscordShoutbox_getPluginSettingArray($group_id){
 		'title' => 'Websocket URL',
 		'description' => 'Shoutbox websocket URL',
 		'optionscode' => 'text',
-		'value' => 'wss://hazmoleaws.ddns.net:8001',
+		'value' => 'wss://transmitter.hazmoleaws.work:8001',
+		'disporder' => $dorder++,
+		'gid'		=> $group_id
+	);
+	$setting[] = array(
+		'name' => 'hazDiscordShoutbox_widget',
+		'title' => 'Widget URL',
+		'description' => 'Channels widget URL',
+		'optionscode' => 'text',
+		'value' => 'https://discordapp.com/api/guilds/326606306934915074/widget.json',
 		'disporder' => $dorder++,
 		'gid'		=> $group_id
 	);
@@ -164,7 +182,7 @@ function hazDiscordShoutbox_getPluginSettingArray($group_id){
 		'title' => 'Guest using permission',
 		'description' => 'Can guest using the shoutbox?',
 		'optionscode' => 'yesno',
-		'value' => 1,
+		'value' => 0,
 		'disporder' => $dorder++,
 		'gid'		=> $group_id
 	);
@@ -187,25 +205,20 @@ function hazDiscordShoutbox_getPluginSettingArray($group_id){
 		'gid'		=> $group_id
 	);
 
-
 	return $setting;
 }
 
 function hazDiscordShoutbox_getMyTemplateContent(){
 	$my_template['hazdsb_header_include'] = 
 "<script src='{\$mybb->asset_url}/jscripts/hazmole/discordshoutbox/hazDiscordShoutbox.js?ver=".HZDSB_PLUGIN_VER."'></script>
-<script src='http://twemoji.maxcdn.com/twemoji.min.js'></script>  
+<script src='https://twemoji.maxcdn.com/twemoji.min.js'></script>  
 <link rel='stylesheet' href='{\$mybb->asset_url}/jscripts/hazmole/discordshoutbox/hazDiscordShoutbox.css?ver=".HZDSB_PLUGIN_VER."' type='text/css'/>
 <script type=\"text/javascript\">
-	hazdsb_server = '{\$mybb->settings['hazDiscordShoutbox_server']}'
-	/*
-	shoutvol = '{\$mybb->settings['rinshoutbox_def_vol']}',
-	iclid = '{\$mybb->settings['rinshoutbox_imgurapi']}',
-	maxnamelength = '{\$mybb->settings['maxnamelength']}',
-	*/
+	hazdsb_server = '{\$mybb->settings['hazDiscordShoutbox_server']}';
+	hazdsb_widget = '{\$mybb->settings['hazDiscordShoutbox_widget']}';
 	\$(document).ready(function() {
-		hazDiscordShoutbox_connect();
 		twemoji.size = '16x16';
+		hazDiscordShoutbox_connect();
 		hazDiscordShoutbox_buildOnline();
 	});
 </script>";
@@ -224,7 +237,7 @@ function hazDiscordShoutbox_getMyTemplateContent(){
 		<tr><td colspan=2 class=\"tcat\"><span class=\"smalltext\"><strong><span>{\$lang->hazDiscordShoutbox_notice_msg}(告示) : </span><span class='notshow'></span></strong></span></td>
 		</tr>
 		<tr>
-			<td class=\"trow2\">
+			<td class=\"trow2\" style=\"max-width:400px;\">
 				<div class=\"contentShout\">
 					<div id=\"hazdsb_shoutarea\" class=\"shoutarea wrapShout\" style=\"height:{\$mybb->settings['hazDiscordShoutbox_height']}px;\"></div>
 				</div>
