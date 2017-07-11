@@ -40,8 +40,6 @@ function hazDiscordShoutbox_parseMessage(message){
 	var content = message.content;
 	// new line
 	content = content.replace(/\n/g, "<br/>");
-	// smilies
-	content = hazDiscordShoutbox_parseSmilies(content);
 	// auto link
 	var match_arr = content.match(/(?![^<]*>|[^<>]*<\/)((https?:)\/\/[a-z0-9&#=.\/\-?_%]+)/gi);
 	content = content.replace(/(?![^<]*>|[^<>]*<\/)((https?:)\/\/[a-z0-9&#=.\/\-?_%]+)/gi, "<a href=\"$1\" target=\"_blank\">$1</a>");
@@ -52,6 +50,8 @@ function hazDiscordShoutbox_parseMessage(message){
           var link = (isImage(url))? ("<img src='"+url+"' />"): ("附件");
           content += "<br/><a href='"+url+"' target='_blank'>" + link + "</a>";
        }
+    // smilies
+	content = hazDiscordShoutbox_parseSmilies(content);
     // append image preview
     if(match_arr!=null)
 	    for(var i=0;i<match_arr.length;i++){
@@ -88,7 +88,7 @@ function hazDiscordShoutbox_say(){
 }
 
 function hazDiscordShoutbox_buildOnline(){
-	if( hazdsb_widget==null ){  console.error("Widget url is not set by Admin."); return ;}
+	if( hazdsb_widget==null || hazdsb_widget==""){  console.error("Widget url is not set by Admin."); return ;}
 
 	$.ajax({ url: hazdsb_widget}).done(function(data) {
 		if(document.getElementById("hazdsb_invite_btn"))
@@ -112,11 +112,11 @@ function hazDiscordShoutbox_buildMember(member){
 function hazDiscordShoutbox_parseSmilies(content){
 	for(var i=0;i<hazdsb_smilies_json.length;i++){
 		var smilie = hazdsb_smilies_json[i];
-		content = content.replace(smilie.find, ("<img src=\""+smilie.image+"\">"));
+		var pattern = new RegExp(smilie.find, 'g');
+		content = content.replace(pattern, ("<img src=\""+smilie.image+"\">"));
 	}
 	return content; 
 }
-
 
 
 function isWebSoketWork(){	return ("WebSocket" in window); }

@@ -13,7 +13,7 @@ if(!defined("IN_MYBB"))
     die("Direct initialization of this file is not allowed.");
 }
 
-define('HZDSB_PLUGIN_VER', '1.0');
+define('HZDSB_PLUGIN_VER', '1.1');
 /**
  * Installation Guild:
  * 		- put "hazHider.php" into "./inc/plugins/"
@@ -131,13 +131,17 @@ function hazDiscordShoutbox_buildShoubox($message) {
 	else
 		$hazdsb_invite= hazDiscordShoutbox_getInviteTemplate( false );
 
+//	echo "<textarea>";
+
 	$smilie_json = "";
     $smilies = $cache->read("smilies");
 	foreach($smilies as $sid => $smilie){
-		$smilie_json .= "{find:'".$smilie["find"]."',image:'".$smilie["image"]."'},";
+		//if($smilie["disporder"]<=100)
+		$smilie_json .= "{find:'".preg_quote(preg_quote($smilie["find"]))."',image:'".$smilie["image"]."'},";
 	}
 	$smilie_json = "[".$smilie_json."];";
 
+//	echo "</textarea>";
 
 	eval("\$haz_shoutbox = \"".$templates->get("hazdsb_shoutbox")."\";");
 	eval("\$hazdsb_include = \"".$templates->get("hazdsb_header_include")."\";");
