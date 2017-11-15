@@ -206,6 +206,7 @@ function hazrd_createNumberSet( sign, number){
 function haz_rd_updateByDb(claim, results, reason) {
 	var data = {
 		action: "hz_rolldice",
+		pid: getPidOfCurrentPage(),
 		haz_dices_claim:	claim,
 		haz_dices_result:	results,
 		haz_dices_reason:	reason
@@ -219,6 +220,10 @@ function haz_rd_updateByDb(claim, results, reason) {
 	var error = function(xhr, status, err) {
 		//console.error(status, err.toString());
 	};
+
+	var hash = (location.hash);
+	console.log(hash);
+
 	$.ajax({
 		url: "misc.php",
 		method: "POST",
@@ -243,7 +248,7 @@ function haz_rd_tableRender(claim, results, reason){
 	reason = reason.replace(/</g, '&lt;');
 	reason = reason.replace(/>/g, '&gt;');
 	
-	if(results.match(/¡÷(.*)$/)==null)
+	if(results.match(/→(.*)$/)==null)
 		results += "</td><td>";
 	else
 		results = results.replace(/→(.*)$/, '</td><td> → <b style=\'color:blue;\'>$1</b>');
@@ -253,4 +258,12 @@ function haz_rd_tableRender(claim, results, reason){
 	TD += '<td> → '+results+'</td>';
 	TD += '<td> '+reason+'</td>';
 	return '<tr>'+TD+'</tr>';
+}
+
+function getPidOfCurrentPage(){
+	var url = location.href;
+	var result = url.match(/[?&]pid=(\d+)/);
+
+	if(result==null) 	return 0;
+	else				return parseInt(result[1]);
 }

@@ -12,7 +12,7 @@ if(!defined("IN_MYBB"))
     die("Direct initialization of this file is not allowed.");
 }
 
-define('HZRD_PLUGIN_VER', '2.66');
+define('HZRD_PLUGIN_VER', '2.8');
 /**
  * Installation Guild:
  * 		- put "hazRollDice.php" into "./inc/plugins/"
@@ -38,12 +38,12 @@ function hazRollDice_info()
 
 // Hook
 $plugins->add_hook("newreply_start", 		"hazRollDice_buildRollBar");
-$plugins->add_hook("editpost_action_start",	"hazRollDice_buildRollBar");
+$plugins->add_hook("editpost_action_start",	"hazRollDice_buildRollBarWithoutUnconfirm");
 $plugins->add_hook("newthread_start",		"hazRollDice_buildRollBar");
 
 $plugins->add_hook("newreply_do_newreply_end", 	"hazRollDice_setResultRecord");
-$plugins->add_hook("editpost_do_editpost_end", 	"hazRollDice_setResultRecord");
-//$plugins->add_hook("newthread_do_newthread_end","hazRollDice_test");
+//$plugins->add_hook("editpost_do_editpost_end", 	"hazRollDice_setResultRecord");
+$plugins->add_hook("newthread_do_newthread_end","hazRollDice_setResultRecord");
 
 $plugins->add_hook("postbit",	"hazRollDice_buildDiceResult");
 $plugins->add_hook("misc_start","hazRollDice_handleResultRecord");
@@ -127,6 +127,28 @@ function hazRollDice_buildRollBar() {
 	eval("\$hazDice_bar .= \"".$templates->get("hzrd_rollbar")."\";");
 }
 
+function hazRollDice_buildRollBarWithoutUnconfirm(){
+	global $lang, $db, $mybb , $templates, $theme, $post;
+	global $hazDice_result, $hazDice_bar;
+	// Load Language pack
+	$lang->load('hazRollDice');
+	// Set post_id & user_id
+	$pid = ($post['pid'])? 	$post['pid']: -1;
+	$uid = $mybb->user['uid'];
+	// Fetch Data from DataBase
+	$post_dices_query = $db->simple_select("haz_rolldice", "*", "pid=".$pid);
+	// Loop building
+	$text = "";
+	$result = null;
+	while(null!=($result = $db->fetch_array($post_dices_query))){
+		$text .= hazRollDice_getDiceResultTemplate( $result['claim'], $result['result'], $result['reason'], true);
+	}
+	if($text=="")	$text="<tr><td>--</td></tr>";
+	// Evaluate String to variables
+	eval("\$hazDice_result .= \"".$text."\";");	
+	eval("\$hazDice_bar .= \"".$templates->get("hzrd_rollbar")."\";");
+}
+
 // For showThread, show each post's Rolling result.
 function hazRollDice_buildDiceResult(&$post) {
 	global $lang, $db, $mybb , $templates, $theme;
@@ -159,11 +181,11 @@ function hazRollDice_buildDiceResult(&$post) {
 
 // For storing result to SQL
 function hazRollDice_handleResultRecord() {
-	global $db, $_POST, $mybb;
-	
+	global $db, $_POST, $mybb, $pid;;
+
 	if($_POST['action'] == "hz_rolldice") {
 		$new_record = array(
-			"pid" 		=> 0,
+			"pid" 		=> $mybb->get_input("pid"),
 			"uid" 		=> $mybb->user['uid'],
 			"claim" 	=> $mybb->get_input("haz_dices_claim"),
 			"result" 	=> $mybb->get_input("haz_dices_result"),
@@ -175,15 +197,18 @@ function hazRollDice_handleResultRecord() {
 
 // For updating result to SQL
 function hazRollDice_setResultRecord() {
-	global $db, $mybb, $pid;
+	global $db, $mybb, $pid, $thread_info;
 	
+	if($pid==0){
+		$pid=$thread_info["pid"];
+	}
+
 	if(!$mybb->get_input('savedraft')){
 		$uid   = $mybb->user['uid'];
 		$query = "UPDATE mybb_haz_rolldice SET pid=".$pid." WHERE uid='".$uid."' AND pid=0;";
 		$db->write_query($query);
 	}
 }
-
 
 function hazRollDice_deleteDiceResult(){
 	global $db, $pids;
