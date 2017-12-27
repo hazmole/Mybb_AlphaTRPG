@@ -12,7 +12,7 @@ if(!defined("IN_MYBB"))
     die("Direct initialization of this file is not allowed.");
 }
 
-define('HZIT_PLUGIN_VER', '1.0');
+define('HZIT_PLUGIN_VER', '1.1');
 /**
  * Require Plugin: hazGeneralLib
  *
@@ -51,7 +51,7 @@ function hazItem_install() {
     global $db;
     // Add ItemList to Database
     $db->write_query("CREATE TABLE mybb_haz_itemList( 
-        id int(10), title VARCHAR(20), image VARCHAR(50), description VARCHAR(50))");
+        id int(10), title VARCHAR(20), image VARCHAR(100), description VARCHAR(100))");
     // Add Owner_ItemList to Database
     $db->write_query("CREATE TABLE mybb_haz_items( 
         uid int(10), id int(10), date bigint(30))");
@@ -226,17 +226,20 @@ function hazItem_buildMemberItemList(){
 
     // build Item lists
     $hzitem_items_content = "";
-    $query = $db->simple_select("haz_items", "id", "uid={$uid} ORDER BY date ASC");
+    $query = $db->simple_select("haz_items", "id", "uid={$uid} ORDER BY id ASC");
     while( ($id = $db->fetch_field($query, "id")) != NULL){
         $iids[] = $id;
     }
     if(count($iids)==0) $hzitem_items_content = $lang->hazItem_dont_have_item;
     else{
-        $query = $db->simple_select("haz_itemlist", "*", "id IN (".implode(",", $iids).")");
+        $query = $db->simple_select("haz_itemList", "*", "id IN (".implode(",", $iids).")");
         while( ($item = $db->fetch_array($query)) != NULL){
+            $name = $item["title"];
+            $url  = $item["image"];
+            $desc = $item["description"];
             $hzitem_items_content .= 
             "<td style='text-align:center;'>
-                <img src='".$item["image"]."' title='".$item["description"]."' style='height:100px;'><br/><b>".$item["title"]."</b>
+                <a href='javascript:void(0)'><img src='{$url}' title='{$desc}' alt='{$name}' style='height:100px;' onclick='pop_item_window(this)'></a><br/><b>{$name}</b>
             </td>";
         }
         $hzitem_items_content = hazItem_getMemberItemList_scrollableContent($hzitem_items_content);
@@ -265,16 +268,32 @@ function move(v){
     var l='0';
     if(obj.style.left!='') l=((obj.style.left).match(/(-?\d+)px/))[1];
     l=parseInt(l);
-
+    if(frm.offsetWidth-obj.offsetWidth>60) return;
     if(v>0 && (l+v)>30) return;
-    if(v<0 && (obj.offsetWidth+l+v)<frm.offsetWidth-30) return;
+    if(v<0 && (l+v)<frm.offsetWidth-obj.offsetWidth-30) return;
     obj.style.left = (l+v)+'px';}
+function pop_item_window(obj){
+    $('#item_pop_window_close').show();
+    $('#item_window_title').html(obj.alt);
+    $('#item_window_image').attr('src',obj.src);
+    $('#item_window_desc' ).html(obj.title);
+    $('#item_pop_window' ).show(500);}
+function close_item_window(obj){
+    $('#item_pop_window_close').hide();
+    $('#item_pop_window').hide();
+}
 </script>
 <div id='haz_list_frame' style='position:relative;overflow-x:hidden;' >
     <table id='haz_list_obj' style='position:relative;'><tr>".$content."</tr></table>
 </div>
 <button style='position:absolute;width:30px;height:100%;background:#b5b5b5;top:0px; left:0px;' onmousedown='mholdstart(move.bind(this, 5))' onmouseup='mholdend()'>&lt;</button>
 <button style='position:absolute;width:30px;height:100%;background:#b5b5b5;top:0px;right:0px;' onmousedown='mholdstart(move.bind(this,-5))' onmouseup='mholdend()'>&gt;</button>
+<div id='item_pop_window_close' style='background:black;opacity: 0.75;display:none;position:fixed;top:0px;left:0px;width:100%;height:100%;' onclick='close_item_window()'></div>
+<fieldset id='item_pop_window' style='display:none;color:black;position:fixed;border:5px solid #ae7300;width:500px;height:400px;top:50%;left:50%;margin-top:-200px;margin-left:-250px';><center>
+    <h1 id='item_window_title'></h1><p>
+    <div style='height:200px;'><img id='item_window_image' src='' style='max-width:400px;max-height:200px;border:1px black solid;'></div><p>
+    <div id='item_window_desc' style='background:white;width:450px;height:100px;border:black 1px solid;'></div>
+</center></fieldset>
 ";
 }
 
