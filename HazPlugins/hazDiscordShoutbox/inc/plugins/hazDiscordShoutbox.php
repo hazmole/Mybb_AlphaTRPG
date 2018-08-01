@@ -13,7 +13,7 @@ if(!defined("IN_MYBB"))
     die("Direct initialization of this file is not allowed.");
 }
 
-define('HZDSB_PLUGIN_VER', '1.1');
+define('HZDSB_PLUGIN_VER', '1.2');
 /**
  * Installation Guild:
  * 		- put "hazHider.php" into "./inc/plugins/"
