@@ -90,7 +90,7 @@ function hazDiscordWebhook_task_getPluginSettingArray($group_id){
 		'title' => 'Webhook URL',
 		'description' => 'Channel websocket URL',
 		'optionscode' => 'text',
-		'value' => 'https://discordapp.com/api/webhooks/385614251517018122/D2jZd6VQ-NmhB25u4abT4W5n6uYVU1r-2P1t2bi6qlrNHSUuOapLDWzUizn43GfgfPbl',
+		'value' => '',
 		'disporder' => $dorder++,
 		'gid'		=> $group_id
 	);
