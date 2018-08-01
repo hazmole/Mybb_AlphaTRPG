@@ -168,7 +168,7 @@ function hazDiscordShoutbox_getPluginSettingArray($group_id){
 		'title' => 'Websocket URL',
 		'description' => 'Shoutbox websocket URL',
 		'optionscode' => 'text',
-		'value' => 'wss://transmitter.hazmoleaws.work:8001',
+		'value' => '',
 		'disporder' => $dorder++,
 		'gid'		=> $group_id
 	);
@@ -177,7 +177,7 @@ function hazDiscordShoutbox_getPluginSettingArray($group_id){
 		'title' => 'Widget URL',
 		'description' => 'Channels widget URL',
 		'optionscode' => 'text',
-		'value' => 'https://discordapp.com/api/guilds/326606306934915074/widget.json',
+		'value' => '',
 		'disporder' => $dorder++,
 		'gid'		=> $group_id
 	);
